@@ -1,0 +1,28 @@
+# Node.js
+**/node_modules/
+**/dist/
+frontend/dist/
+frontend/out/
+
+# Python / Django
+**/__pycache__/
+**/*.pyc
+backend/db.sqlite3
+.venv/
+env/
+venv/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDEs & System
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Agent Caches
+.gemini/
+antigravity/
