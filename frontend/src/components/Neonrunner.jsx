@@ -378,6 +378,10 @@ export default function Neonrunner() {
             border-left: none !important;
             border-right: none !important;
           }
+          .canvas-wrapper-relative {
+            width: 100% !important;
+            max-width: 100% !important;
+          }
           .runner-touch-zones {
             display: flex;
             position: absolute;
