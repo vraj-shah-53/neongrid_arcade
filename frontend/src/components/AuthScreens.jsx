@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { playSound } from '../utils/audio';
-import { Mail, Lock, User, ShieldAlert } from 'lucide-react';
+import { Mail, Lock, User, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 
 export default function AuthScreens() {
   const { login, register } = useAuth();
@@ -9,6 +9,7 @@ export default function AuthScreens() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -95,12 +96,24 @@ export default function AuthScreens() {
             <Lock className="input-icon" size={18} />
             <input
               id="auth-password"
-              type="password"
+              type={showPassword ? "text" : "password"}
+              className="password-input"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <button
+              type="button"
+              className="password-toggle-btn"
+              onClick={() => {
+                playSound('click');
+                setShowPassword(!showPassword);
+              }}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
         </div>
 
