@@ -1522,12 +1522,17 @@ body {
     padding: 1.5rem 1rem;
   }
   .game-view {
-    padding: 1rem;
+    padding: 0.5rem;
   }
   .game-container-card {
-    padding: 1.25rem;
+    padding: 0 !important;
     min-height: auto;
-    border-radius: 12px;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    overflow: visible !important;
   }
   .hero-section {
     margin-bottom: 2rem;
