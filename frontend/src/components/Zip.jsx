@@ -110,69 +110,111 @@ export default function Zip() {
     return null;
   };
 
-  const tryExtendPath = (r, c) => {
-    if (isWon || isPending || path.length === 0) return;
-
-    const last = path[path.length - 1];
-    
-    // 1. Must be adjacent
+  const processSingleStep = (currentPath, r, c) => {
+    const last = currentPath[currentPath.length - 1];
     const isAdjacent = Math.abs(r - last.r) + Math.abs(c - last.c) === 1;
-    if (!isAdjacent) return;
+    if (!isAdjacent) return null;
 
-    // 2. Can retract if clicking/hovering the second-to-last cell
-    if (path.length > 1) {
-      const secondLast = path[path.length - 2];
+    // Retract path if it is the second-to-last cell
+    if (currentPath.length > 1) {
+      const secondLast = currentPath[currentPath.length - 2];
       if (secondLast.r === r && secondLast.c === c) {
-        // retract path
-        setPath(p => p.slice(0, -1));
         playSound('keypress');
-        return;
+        return currentPath.slice(0, -1);
       }
     }
 
-    // 3. Cannot cross already drawn path
-    const isVisited = path.some(p => p.r === r && p.c === c);
+    // Truncate path if visited
+    const isVisited = currentPath.some(p => p.r === r && p.c === c);
     if (isVisited) {
-      // If visited, let's retract/truncate the path back to this cell! (convenient undo)
-      const index = path.findIndex(p => p.r === r && p.c === c);
-      // Don't truncate to index 0 if it deletes digit 1 starts
-      setPath(p => p.slice(0, index + 1));
+      const index = currentPath.findIndex(p => p.r === r && p.c === c);
       playSound('keypress');
-      return;
+      return currentPath.slice(0, index + 1);
     }
 
-    // 4. Check digit cell constraints
+    // Check digit cell constraints
     const targetDigit = getDigitAt(r, c);
-    const nextExpectedVal = getNextTargetValue();
+    let nextExpectedVal = null;
+    for (let i = 1; i <= digits.length; i++) {
+      const d = digits.find(x => x.val === i);
+      if (d && !currentPath.some(p => p.r === d.r && p.c === d.c)) {
+        nextExpectedVal = i;
+        break;
+      }
+    }
 
     if (targetDigit) {
       if (targetDigit.val === nextExpectedVal) {
-        // Correct next digit connected!
-        const newPath = [...path, { r, c }];
-        setPath(newPath);
-        
+        const newPath = [...currentPath, { r, c }];
         if (targetDigit.val === digits.length) {
-          // Completed the full path! Check if all cells are covered
           const totalCells = gridSize * gridSize;
           if (newPath.length === totalCells) {
             clearInterval(timerRef.current);
             setIsWon(true);
             playSound('win');
           } else {
-            // Did not cover all squares
             playSound('error');
           }
         } else {
           playSound('match');
         }
+        return newPath;
       } else {
-        // Blocked: hit a digit cell out of order
         playSound('error');
+        return null;
       }
     } else {
-      // Extended into an empty cell
-      setPath(p => [...p, { r, c }]);
       playSound('flip');
+      return [...currentPath, { r, c }];
+    }
+  };
+
+  const tryExtendPath = (r, c) => {
+    if (isWon || isPending || path.length === 0) return;
+
+    const last = path[path.length - 1];
+    const manhattanDist = Math.abs(r - last.r) + Math.abs(c - last.c);
+
+    if (manhattanDist === 0) return;
+
+    let tempPath = [...path];
+    if (manhattanDist > 1) {
+      if (manhattanDist > 3) return; // Prevent wild jumps
+
+      // Interpolate intermediate steps
+      let current = { r: last.r, c: last.c };
+      const steps = [];
+      let limit = 0;
+      while ((current.r !== r || current.c !== c) && limit < 5) {
+        limit++;
+        const dr = Math.sign(r - current.r);
+        const dc = Math.sign(c - current.c);
+        
+        if (Math.abs(r - current.r) >= Math.abs(c - current.c) && dr !== 0) {
+          current = { r: current.r + dr, c: current.c };
+        } else if (dc !== 0) {
+          current = { r: current.r, c: current.c + dc };
+        } else {
+          break;
+        }
+        steps.push({ r: current.r, c: current.c });
+      }
+
+      // Apply steps in sequence
+      for (const step of steps) {
+        const nextPath = processSingleStep(tempPath, step.r, step.c);
+        if (nextPath) {
+          tempPath = nextPath;
+        } else {
+          break; // Stop at any blocked cell
+        }
+      }
+      setPath(tempPath);
+    } else {
+      const nextPath = processSingleStep(tempPath, r, c);
+      if (nextPath) {
+        setPath(nextPath);
+      }
     }
   };
 
