@@ -30,7 +30,7 @@ export default function Wordle() {
 
     try {
       // Call Django backend to generate word
-      const res = await fetch('http://localhost:8000/api/wordle/validate/', {
+      const res = await fetch(window.API_BASE_URL + '/api/wordle/validate/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'generate' })
@@ -74,7 +74,7 @@ export default function Wordle() {
 
     // Verify word exists in dictionary via Django backend
     try {
-      const res = await fetch('http://localhost:8000/api/wordle/validate/', {
+      const res = await fetch(window.API_BASE_URL + '/api/wordle/validate/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word: currentGuess })

@@ -21,7 +21,7 @@ export default function Sudoku() {
     setErrors([]);
     
     try {
-      const res = await fetch('http://localhost:8000/api/sudoku/generate/', {
+      const res = await fetch(window.API_BASE_URL + '/api/sudoku/generate/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ difficulty: diff, size: newSize })

@@ -93,7 +93,7 @@ export default function Numberguess({ roomId, isOnline, onBack }) {
   const fetchRoomState = async () => {
     if (!isOnline || !roomId) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/room/${roomId}/state/`, {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/state/`, {
         credentials: 'include'
       });
       if (res.ok) {
@@ -155,7 +155,7 @@ export default function Numberguess({ roomId, isOnline, onBack }) {
     playSound('click');
     setIsPending(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/room/${roomId}/move/`, {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -210,7 +210,7 @@ export default function Numberguess({ roomId, isOnline, onBack }) {
     }, ...history];
 
     try {
-      const res = await fetch(`http://localhost:8000/api/room/${roomId}/move/`, {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

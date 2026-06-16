@@ -41,7 +41,7 @@ export default function Zip() {
     if (timerRef.current) clearInterval(timerRef.current);
 
     try {
-      const res = await fetch('http://localhost:8000/api/zip/generate/', {
+      const res = await fetch(window.API_BASE_URL + '/api/zip/generate/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ grid_size: size, num_digits: digitsCount })

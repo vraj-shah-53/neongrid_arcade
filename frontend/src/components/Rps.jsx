@@ -45,7 +45,7 @@ export default function Rps({ roomId, isOnline, onBack }) {
   // ----------------------------------------------------
   const fetchRoomState = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/room/${roomId}/state/`, {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/state/`, {
         credentials: 'include'
       });
       if (res.ok) {
@@ -152,7 +152,7 @@ export default function Rps({ roomId, isOnline, onBack }) {
     }
 
     try {
-      const res = await fetch(`http://localhost:8000/api/room/${roomId}/move/`, {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -178,7 +178,7 @@ export default function Rps({ roomId, isOnline, onBack }) {
     playSound('click');
     setIsPending(true);
     try {
-      await fetch(`http://localhost:8000/api/room/${roomId}/move/`, {
+      await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

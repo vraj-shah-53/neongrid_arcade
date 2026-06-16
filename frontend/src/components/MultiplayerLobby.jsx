@@ -25,7 +25,7 @@ export default function MultiplayerLobby({ onLaunchRoom }) {
 
   const fetchChallenges = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/challenges/list/', {
+      const res = await fetch(window.API_BASE_URL + '/api/challenges/list/', {
         credentials: 'include'
       });
       if (res.ok) {
@@ -71,7 +71,7 @@ export default function MultiplayerLobby({ onLaunchRoom }) {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/api/challenges/send/', {
+      const res = await fetch(window.API_BASE_URL + '/api/challenges/send/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -98,7 +98,7 @@ export default function MultiplayerLobby({ onLaunchRoom }) {
   const handleRespond = async (challengeId, action) => {
     playSound('click');
     try {
-      const res = await fetch('http://localhost:8000/api/challenges/respond/', {
+      const res = await fetch(window.API_BASE_URL + '/api/challenges/respond/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

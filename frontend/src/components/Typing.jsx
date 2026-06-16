@@ -25,7 +25,7 @@ export default function Typing() {
     if (timerRef.current) clearInterval(timerRef.current);
 
     try {
-      const res = await fetch('http://localhost:8000/api/typing/passage/');
+      const res = await fetch(window.API_BASE_URL + '/api/typing/passage/');
       const data = await res.json();
       setPassage(data);
     } catch (e) {

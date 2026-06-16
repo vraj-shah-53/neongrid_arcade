@@ -46,7 +46,7 @@ export default function Tictactoe({ roomId, isOnline, onBack }) {
   // ----------------------------------------------------
   const fetchRoomState = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/room/${roomId}/state/`, {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/state/`, {
         credentials: 'include'
       });
       if (res.ok) {
@@ -113,7 +113,7 @@ export default function Tictactoe({ roomId, isOnline, onBack }) {
 
       setIsPending(true);
       try {
-        const res = await fetch(`http://localhost:8000/api/room/${roomId}/move/`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -151,7 +151,7 @@ export default function Tictactoe({ roomId, isOnline, onBack }) {
       // Call unbeatable AI on Django backend
       setIsPending(true);
       try {
-        const response = await fetch('http://localhost:8000/api/tictactoe/move/', {
+        const response = await fetch(window.API_BASE_URL + '/api/tictactoe/move/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   // Check if user session already exists on page mount
   const checkUser = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/auth/user/', {
+      const res = await fetch(window.API_BASE_URL + '/api/auth/user/', {
         credentials: 'include'
       });
       const data = await res.json();
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const res = await fetch('http://localhost:8000/api/auth/login/', {
+    const res = await fetch(window.API_BASE_URL + '/api/auth/login/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (name, email, password) => {
-    const res = await fetch('http://localhost:8000/api/auth/register/', {
+    const res = await fetch(window.API_BASE_URL + '/api/auth/register/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('http://localhost:8000/api/auth/logout/', { 
+      await fetch(window.API_BASE_URL + '/api/auth/logout/', { 
         method: 'POST',
         credentials: 'include'
       });

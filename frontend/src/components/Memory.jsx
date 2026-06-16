@@ -112,7 +112,7 @@ export default function Memory({ roomId, isOnline, onBack }) {
   // ----------------------------------------------------
   const fetchRoomState = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/room/${roomId}/state/`, {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/state/`, {
         credentials: 'include'
       });
       if (res.ok) {
@@ -173,7 +173,7 @@ export default function Memory({ roomId, isOnline, onBack }) {
     setIsPending(true);
     try {
       const currentScores = { ...scores };
-      const res = await fetch(`http://localhost:8000/api/room/${roomId}/move/`, {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -225,7 +225,7 @@ export default function Memory({ roomId, isOnline, onBack }) {
         // Wait 1 second so both players can view the cards, then commit changes
         setTimeout(async () => {
           try {
-            await fetch(`http://localhost:8000/api/room/${roomId}/move/`, {
+            await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',

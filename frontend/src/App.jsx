@@ -215,7 +215,7 @@ function App() {
     }
     playSound('click');
     if (activeRoomId) {
-      fetch(`http://localhost:8000/api/room/${activeRoomId}/abandon/`, {
+      fetch(`${window.API_BASE_URL}/api/room/${activeRoomId}/abandon/`, {
         method: 'POST',
         credentials: 'include'
       }).catch(err => console.warn("Error calling abandon room:", err));

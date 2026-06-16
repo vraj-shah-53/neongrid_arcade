@@ -83,7 +83,7 @@ export default function Eightpuzzle() {
     setErrorMsg(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/eightpuzzle/solve/', {
+      const response = await fetch(window.API_BASE_URL + '/api/eightpuzzle/solve/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ board })
