@@ -94,12 +94,16 @@ export default function Neonrunner() {
 
     const updateAndRender = () => {
       // 1. UPDATE STATE
-      // Smoothly interpolate player X coordinate to lane target
-      state.playerX += (state.targetLaneX - state.playerX) * 0.25;
+      const isMobile = window.innerWidth <= 768;
+      // Smoothly interpolate player X coordinate to lane target (faster on mobile for high finger responsiveness)
+      state.playerX += (state.targetLaneX - state.playerX) * (isMobile ? 0.35 : 0.25);
       state.distanceTravelled += state.speed * 0.1;
       
-      // Gradually increase speed
-      state.speed = 3.5 + Math.min(6, state.distanceTravelled * 0.0025);
+      // Gradually increase speed (slower progression and lower max speed on mobile)
+      const baseSpeed = isMobile ? 3.0 : 3.5;
+      const maxSpeedIncrease = isMobile ? 4.0 : 6.0;
+      const speedGrowthRate = isMobile ? 0.0012 : 0.0025;
+      state.speed = baseSpeed + Math.min(maxSpeedIncrease, state.distanceTravelled * speedGrowthRate);
 
       // Spawn obstacles (Red laser spikes)
       state.obstacleSpawnTimer -= 1;
@@ -138,9 +142,9 @@ export default function Neonrunner() {
       state.obstacles = state.obstacles.filter(obs => {
         obs.y += obs.speed;
         
-        // Collision detection (Bounding box collision)
-        const playerWidth = 30;
-        const playerHeight = 35;
+        // Collision detection (Bounding box collision - slightly forgiving hitbox on mobile)
+        const playerWidth = isMobile ? 18 : 30;
+        const playerHeight = isMobile ? 22 : 35;
         const collision = 
           obs.y + obs.h / 2 > state.playerY - playerHeight / 2 &&
           obs.y - obs.h / 2 < state.playerY + playerHeight / 2 &&
@@ -163,9 +167,9 @@ export default function Neonrunner() {
       state.bits = state.bits.filter(bit => {
         bit.y += bit.speed;
 
-        // Collection detection
-        const playerWidth = 30;
-        const playerHeight = 35;
+        // Collection detection (slightly larger collection box on mobile to make finger play easier)
+        const playerWidth = isMobile ? 35 : 30;
+        const playerHeight = isMobile ? 40 : 35;
         const isCollected = 
           bit.y + bit.radius > state.playerY - playerHeight / 2 &&
           bit.y - bit.radius < state.playerY + playerHeight / 2 &&
@@ -328,6 +332,30 @@ export default function Neonrunner() {
     localStorage.removeItem('neonrunner_highscore');
   };
 
+  const updatePositionFromTouch = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas || !e.touches || !e.touches[0]) return;
+    const rect = canvas.getBoundingClientRect();
+    const touchX = e.touches[0].clientX - rect.left;
+    const scaleX = canvas.width / rect.width;
+    const canvasX = touchX * scaleX;
+    
+    const state = gameStateRef.current;
+    state.targetLaneX = Math.max(50, Math.min(550, canvasX));
+  };
+
+  const handleTouchStart = (e) => {
+    if (!isPlaying || isGameOver) return;
+    if (e.cancelable) e.preventDefault();
+    updatePositionFromTouch(e);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isPlaying || isGameOver) return;
+    if (e.cancelable) e.preventDefault();
+    updatePositionFromTouch(e);
+  };
+
   return (
     <div className="runner-game-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '1rem' }}>
       <style>{`
@@ -351,28 +379,34 @@ export default function Neonrunner() {
           border-radius: 8px;
           border: 1px solid var(--glass-border);
         }
-        .runner-touch-zones {
-          display: none;
-        }
         @media (max-width: 768px) {
-          .runner-touch-zones {
-            display: flex;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 250px;
-            z-index: 10;
+          .runner-game-container {
+            width: 100vw !important;
+            margin-left: calc(-50vw + 50%);
+            margin-right: calc(-50vw + 50%);
+            padding: 0 !important;
           }
-          .touch-zone-btn {
-            flex: 1;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            outline: none;
+          .runner-canvas {
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 0 !important;
+            border-left: none !important;
+            border-right: none !important;
           }
-          .touch-zone-btn:active {
-            background: rgba(0, 255, 178, 0.04);
+          .runner-dashboard {
+            width: 100% !important;
+            border-radius: 0 !important;
+            border-left: none !important;
+            border-right: none !important;
+          }
+          .victory-modal-overlay {
+            border-radius: 0 !important;
+          }
+          .victory-modal {
+            border-radius: 0 !important;
+            padding: 1.5rem !important;
+            width: 100% !important;
+            max-width: 100% !important;
           }
         }
       `}</style>
@@ -382,21 +416,15 @@ export default function Neonrunner() {
         <div>High Score: <strong style={{ color: 'var(--info)' }}>{highScore}</strong></div>
       </div>
 
-      <div style={{ position: 'relative', width: '600px', maxWidth: '100%' }}>
+      <div className="canvas-wrapper-relative" style={{ position: 'relative', width: '600px', maxWidth: '100%' }}>
         <canvas
           ref={canvasRef}
           width={600}
           height={400}
           className="runner-canvas"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
         />
-
-        {/* Touch zones overlay for mobile players */}
-        {isPlaying && !isGameOver && (
-          <div className="runner-touch-zones">
-            <button className="touch-zone-btn" onClick={moveLeft} aria-label="Move Left"></button>
-            <button className="touch-zone-btn" onClick={moveRight} aria-label="Move Right"></button>
-          </div>
-        )}
 
         {/* Start Game screen overlay */}
         {!isPlaying && !isGameOver && (
@@ -405,7 +433,7 @@ export default function Neonrunner() {
               <div className="victory-emoji" style={{ animation: 'bounce 2.5s infinite' }}>⚡</div>
               <div className="victory-title" style={{ fontSize: '1.8rem' }}>NEON RUNNER</div>
               <div className="victory-text" style={{ fontSize: '0.95rem' }}>
-                Use Left/Right arrow keys (or tap Left/Right sides on mobile) to dodge red barriers and collect blue bits!
+                Use Left/Right arrow keys on desktop, or slide your finger left and right on mobile, to dodge red barriers and collect blue bits!
               </div>
               <button className="btn-primary" onClick={startGame}>
                 Initiate Run
