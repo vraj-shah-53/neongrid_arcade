@@ -74,7 +74,8 @@ export default function Tictactoe({ roomId, isOnline, onBack }) {
             const winSym = data.winner_id === data.player_1.id ? 'X' : 'O';
             setWinner(winSym);
           }
-          if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+        } else {
+          setWinner(null);
         }
       }
     } catch (e) {
@@ -208,6 +209,31 @@ export default function Tictactoe({ roomId, isOnline, onBack }) {
     setWinner(null);
   };
 
+  const handleOnlineReset = async () => {
+    playSound('click');
+    setIsPending(true);
+    const emptyBoard = Array(9).fill("");
+    try {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          board_state: { board: emptyBoard, status: 'playing' },
+          switch_turn: false
+        })
+      });
+      if (res.ok) {
+        setWinner(null);
+        fetchRoomState();
+      }
+    } catch (e) {
+      console.error("Failed to reset online game:", e);
+    } finally {
+      setIsPending(false);
+    }
+  };
+
   // Determine displayed turn text
   let turnText = "";
   if (isOnline) {
@@ -285,9 +311,22 @@ export default function Tictactoe({ roomId, isOnline, onBack }) {
                   )
               }
             </div>
-            <button className="btn-primary" onClick={isOnline ? onBack : resetGame}>
-              {isOnline ? 'Return to Lounge' : 'Play Again'}
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
+              {isOnline ? (
+                <>
+                  <button className="btn-primary" onClick={handleOnlineReset} disabled={isPending} style={{ flex: 1 }}>
+                    {isPending ? 'Resetting...' : 'Play Again'}
+                  </button>
+                  <button className="btn-secondary" onClick={() => onBack(true)} style={{ flex: 1 }}>
+                    Exit Room
+                  </button>
+                </>
+              ) : (
+                <button className="btn-primary" onClick={resetGame} style={{ width: '100%' }}>
+                  Play Again
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

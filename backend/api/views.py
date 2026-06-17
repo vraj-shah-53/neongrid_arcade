@@ -1272,10 +1272,12 @@ def make_room_move(request, room_id):
         winner_id = data.get('winner_id')
         switch_turn = data.get('switch_turn', False)
         
-        # Optionally allow closing challenges once rooms are initialized and active
-        # to keep lists clean
         if board_state:
             room.board_state = json.dumps(board_state)
+            if board_state.get('status') == 'playing' and room.status == 'ended':
+                room.status = 'playing'
+                room.winner = None
+                room.turn = room.player_1
 
         if switch_turn:
             room.turn = room.player_2 if room.turn == room.player_1 else room.player_1

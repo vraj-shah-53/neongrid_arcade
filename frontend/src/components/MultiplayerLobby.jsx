@@ -13,7 +13,7 @@ const MULTIPLAYER_GAMES = [
 ];
 
 export default function MultiplayerLobby({ onLaunchRoom }) {
-  const { user, logout } = useAuth();
+  const { user, logout, checkUser } = useAuth();
   const [receiverEmail, setReceiverEmail] = useState('');
   const [selectedGame, setSelectedGame] = useState('tictactoe');
   const [incoming, setIncoming] = useState([]);
@@ -50,6 +50,7 @@ export default function MultiplayerLobby({ onLaunchRoom }) {
 
   useEffect(() => {
     fetchChallenges();
+    if (checkUser) checkUser();
     // Poll every 3 seconds
     pollTimerRef.current = setInterval(fetchChallenges, 3000);
     return () => {

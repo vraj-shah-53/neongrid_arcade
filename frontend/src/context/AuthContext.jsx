@@ -3,10 +3,25 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    // Try to load cached user immediately to prevent layout shifts/unnecessary logins
+    const cached = localStorage.getItem('rememberedUser');
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.email) {
+          return parsed;
+        }
+      } catch (e) {
+        localStorage.removeItem('rememberedUser');
+      }
+    }
+    return null;
+  });
+  
   const [loading, setLoading] = useState(true);
 
-  // Check if user session already exists on page mount
+  // Check if user session already exists on page mount or refresh stats
   const checkUser = async () => {
     try {
       const res = await fetch(window.API_BASE_URL + '/api/auth/user/', {
@@ -14,23 +29,84 @@ export const AuthProvider = ({ children }) => {
       });
       const data = await res.json();
       if (data.authenticated) {
-        setUser({
+        // Update user state and keep cached credentials if they exist
+        setUser(prev => {
+          const updated = {
+            id: data.id,
+            name: data.name,
+            email: data.email,
+            wins: data.wins,
+            losses: data.losses,
+            ties: data.ties,
+            password: prev ? prev.password : undefined
+          };
+          localStorage.setItem('rememberedUser', JSON.stringify(updated));
+          return updated;
+        });
+      } else {
+        // Session not active on server - check if we have remembered credentials
+        const cached = localStorage.getItem('rememberedUser');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed.email && parsed.password) {
+            // Attempt background re-login
+            const loginRes = await backgroundLogin(parsed.email, parsed.password);
+            if (!loginRes.success) {
+              setUser(null);
+              localStorage.removeItem('rememberedUser');
+            }
+          } else {
+            setUser(null);
+            localStorage.removeItem('rememberedUser');
+          }
+        } else {
+          setUser(null);
+        }
+      }
+    } catch (e) {
+      console.warn("Auth check failed:", e);
+      // On network error, keep cached user if we have one so user can still play offline modules
+      const cached = localStorage.getItem('rememberedUser');
+      if (cached) {
+        try {
+          setUser(JSON.parse(cached));
+        } catch (err) {}
+      } else {
+        setUser(null);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper login for background use to avoid setting state multiple times
+  const backgroundLogin = async (email, password) => {
+    try {
+      const res = await fetch(window.API_BASE_URL + '/api/auth/login/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const userData = {
           id: data.id,
           name: data.name,
           email: data.email,
           wins: data.wins,
           losses: data.losses,
-          ties: data.ties
-        });
-      } else {
-        setUser(null);
+          ties: data.ties,
+          password: password
+        };
+        setUser(userData);
+        localStorage.setItem('rememberedUser', JSON.stringify(userData));
+        return { success: true };
       }
-    } catch (e) {
-      console.warn("Auth check failed:", e);
-      setUser(null);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.warn("Background login failed:", err);
     }
+    return { success: false };
   };
 
   useEffect(() => {
@@ -46,7 +122,17 @@ export const AuthProvider = ({ children }) => {
     });
     const data = await res.json();
     if (res.ok) {
-      setUser(data);
+      const userData = {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        wins: data.wins,
+        losses: data.losses,
+        ties: data.ties,
+        password: password
+      };
+      setUser(userData);
+      localStorage.setItem('rememberedUser', JSON.stringify(userData));
       return { success: true };
     } else {
       return { success: false, error: data.error || "Login failed" };
@@ -62,7 +148,17 @@ export const AuthProvider = ({ children }) => {
     });
     const data = await res.json();
     if (res.ok) {
-      setUser(data);
+      const userData = {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        wins: data.wins,
+        losses: data.losses,
+        ties: data.ties,
+        password: password
+      };
+      setUser(userData);
+      localStorage.setItem('rememberedUser', JSON.stringify(userData));
       return { success: true };
     } else {
       return { success: false, error: data.error || "Registration failed" };
@@ -70,6 +166,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    localStorage.removeItem('rememberedUser');
     try {
       await fetch(window.API_BASE_URL + '/api/auth/logout/', { 
         method: 'POST',
