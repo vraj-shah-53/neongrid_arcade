@@ -69,7 +69,8 @@ export default function Nodehack({ roomId, isOnline, onBack }) {
         }
 
         // Host checks if both players answered current question and advances
-        if (isPlayer1 && data.status !== 'ended') {
+        const hostIsMe = user && data && data.player_1 && String(data.player_1.id) === String(user.id);
+        if (hostIsMe && data.status !== 'ended') {
           if (answers[p1Id] !== undefined && answers[p2Id] !== undefined) {
             // Both answered! Transition to next question after 2.5 seconds delay
             if (!transitioningRef.current) {
