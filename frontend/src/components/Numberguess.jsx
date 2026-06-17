@@ -108,7 +108,9 @@ export default function Numberguess({ roomId, isOnline, onBack }) {
         }
  
         const bState = data.board_state || {};
-        if (bState.max_range) setMaxRange(bState.max_range);
+        const currentIsCodemaker = data && user && data.player_1 && data.player_1.id === user.id;
+        const isCurrentlySetting = currentIsCodemaker && (data.status === 'setting' || bState.status === 'setting');
+        if (bState.max_range && !isCurrentlySetting) setMaxRange(bState.max_range);
         if (bState.target) setTargetNumber(bState.target);
         if (bState.guesses) {
           setHistory(bState.guesses);
