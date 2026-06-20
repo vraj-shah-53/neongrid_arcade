@@ -84,7 +84,6 @@ export default function Nodehack({ roomId, isOnline, onBack }) {
 
         // Check for winner
         if (data.status === 'ended') {
-          if (pollTimerRef.current) clearInterval(pollTimerRef.current);
           if (data.winner_id) {
             if (data.winner_id === data.player_1.id) {
               setWinnerName(data.player_1.name);
@@ -93,11 +92,39 @@ export default function Nodehack({ roomId, isOnline, onBack }) {
             }
           } else {
             setIsTie(true);
+            setWinnerName(null);
           }
+        } else {
+          setWinnerName(null);
+          setIsTie(false);
         }
       }
     } catch (e) {
       console.warn("Failed fetching Nodehack state:", e);
+    }
+  };
+
+  const handleOnlineReset = async () => {
+    playSound('click');
+    setIsPending(true);
+    try {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ is_reset: true })
+      });
+      if (res.ok) {
+        setWinnerName(null);
+        setIsTie(false);
+        setSelectedChoice(null);
+        transitioningRef.current = false;
+        fetchRoomState();
+      }
+    } catch (e) {
+      console.error("Failed to reset online Nodehack game:", e);
+    } finally {
+      setIsPending(false);
     }
   };
 
@@ -393,9 +420,14 @@ export default function Nodehack({ roomId, isOnline, onBack }) {
                 : `Hacker ${winnerName} successfully overloaded the network node!`
               }
             </div>
-            <button className="btn-primary" onClick={() => onBack(true)}>
-              Return to Lounge
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
+              <button className="btn-primary" onClick={handleOnlineReset} disabled={isPending} style={{ flex: 1 }}>
+                {isPending ? 'Resetting...' : 'Play Again'}
+              </button>
+              <button className="btn-secondary" onClick={() => onBack(true)} style={{ flex: 1 }}>
+                Exit Room
+              </button>
+            </div>
           </div>
         </div>
       )}

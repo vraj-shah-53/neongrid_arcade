@@ -182,9 +182,7 @@ export default function Rps({ roomId, isOnline, onBack }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          board_state: { choices: {}, status: 'playing' }
-        })
+        body: JSON.stringify({ is_reset: true })
       });
       setResult("Awaiting choices...");
       fetchRoomState();
@@ -285,7 +283,7 @@ export default function Rps({ roomId, isOnline, onBack }) {
                 Next Round
               </button>
             )}
-            <button className="btn-secondary" onClick={onBack}>
+            <button className="btn-secondary" onClick={() => onBack(bothSelected)}>
               Exit Room
             </button>
           </>

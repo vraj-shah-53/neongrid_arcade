@@ -42,6 +42,28 @@ export default function Numberguess({ roomId, isOnline, onBack }) {
     setIsWon(false);
   };
 
+  const handleOnlineReset = async () => {
+    playSound('click');
+    setIsPending(true);
+    try {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ is_reset: true })
+      });
+      if (res.ok) {
+        setIsWon(false);
+        setSecretInput('');
+        fetchRoomState();
+      }
+    } catch (e) {
+      console.error("Failed to reset online Numberguess game:", e);
+    } finally {
+      setIsPending(false);
+    }
+  };
+
   const handleRangeChange = (e) => {
     const val = parseInt(e.target.value);
     setMaxRange(val);
@@ -122,11 +144,13 @@ export default function Numberguess({ roomId, isOnline, onBack }) {
         if (data.status === 'ended' || bState.status === 'ended') {
           setIsWon(true);
           setStatus("Target Acquired!");
-          if (pollTimerRef.current) clearInterval(pollTimerRef.current);
-        } else if (bState.status === 'playing') {
-          setStatus("Seek out the secret number!");
         } else {
-          setStatus("Waiting for target initialization...");
+          setIsWon(false);
+          if (bState.status === 'playing') {
+            setStatus("Seek out the secret number!");
+          } else {
+            setStatus("Waiting for target initialization...");
+          }
         }
       }
     } catch (e) {
@@ -490,9 +514,22 @@ export default function Numberguess({ roomId, isOnline, onBack }) {
                 `You guessed the number ${targetNumber} correctly in ${history.length} attempts!`
               )}
             </div>
-            <button className="btn-primary" onClick={isOnline ? () => onBack(true) : () => startNewGame()}>
-              {isOnline ? 'Return to Lobby' : 'Play Again'}
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
+              {isOnline ? (
+                <>
+                  <button className="btn-primary" onClick={handleOnlineReset} disabled={isPending} style={{ flex: 1 }}>
+                    {isPending ? 'Resetting...' : 'Play Again'}
+                  </button>
+                  <button className="btn-secondary" onClick={() => onBack(true)} style={{ flex: 1 }}>
+                    Exit Room
+                  </button>
+                </>
+              ) : (
+                <button className="btn-primary" onClick={() => startNewGame()} style={{ width: '100%' }}>
+                  Play Again
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

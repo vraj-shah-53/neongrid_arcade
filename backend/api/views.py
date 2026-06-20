@@ -1268,6 +1268,72 @@ def make_room_move(request, room_id):
 
     try:
         data = json.loads(request.body)
+        is_reset = data.get('is_reset', False)
+        
+        if is_reset:
+            challenge_sender_id = room.player_1.id
+            challenge_receiver_id = room.player_2.id
+            
+            new_board_state = {}
+            room.turn = room.player_1
+            room.status = 'playing'
+            room.winner = None
+            
+            if room.game_type == 'tictactoe':
+                new_board_state = {"board": [""] * 9, "status": "playing"}
+            elif room.game_type == 'rps':
+                new_board_state = {"choices": {}, "status": "playing"}
+            elif room.game_type == 'memory':
+                emojis = ['😍', '🌀', '🥶', '🥳', '🍁', '😂', '😎', '👊']
+                shuffled = emojis + emojis
+                random.shuffle(shuffled)
+                cards = [{"id": i, "emoji": e, "matched": False} for i, e in enumerate(shuffled)]
+                new_board_state = {
+                    "cards": cards,
+                    "scores": {str(challenge_sender_id): 0, str(challenge_receiver_id): 0},
+                    "selected": [],
+                    "status": "playing"
+                }
+            elif room.game_type == 'numberguess':
+                new_board_state = {
+                    "target": None,
+                    "max_range": 100,
+                    "guesses": [],
+                    "codemaker_id": challenge_sender_id,
+                    "guesser_id": challenge_receiver_id,
+                    "status": "setting"
+                }
+            elif room.game_type == 'scribbles':
+                options = random.sample(PROMPTS, min(5, len(PROMPTS)))
+                options_list = [{"word": p["word"], "hint": p["hint"], "category": p["category"]} for p in options]
+                new_board_state = {
+                    "word_options": options_list,
+                    "word": "",
+                    "hint": "",
+                    "category": "",
+                    "drawer_id": challenge_sender_id,
+                    "guesser_id": challenge_receiver_id,
+                    "guessed": False,
+                    "status": "word_selection",
+                    "time_limit": 90,
+                    "start_time": None
+                }
+            elif room.game_type == 'nodehack':
+                selected_q = random.sample(TRIVIA_QUESTIONS, min(5, len(TRIVIA_QUESTIONS)))
+                new_board_state = {
+                    "questions": selected_q,
+                    "current_index": 0,
+                    "scores": {str(challenge_sender_id): 0, str(challenge_receiver_id): 0},
+                    "node_pos": 50,
+                    "answered": {},
+                    "status": "playing"
+                }
+                
+            room.board_state = json.dumps(new_board_state)
+            room.canvas_strokes = '[]'
+            room.save()
+            return JsonResponse({"success": True})
+
         board_state = data.get('board_state')
         winner_id = data.get('winner_id')
         switch_turn = data.get('switch_turn', False)

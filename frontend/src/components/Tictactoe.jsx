@@ -212,16 +212,12 @@ export default function Tictactoe({ roomId, isOnline, onBack }) {
   const handleOnlineReset = async () => {
     playSound('click');
     setIsPending(true);
-    const emptyBoard = Array(9).fill("");
     try {
       const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          board_state: { board: emptyBoard, status: 'playing' },
-          switch_turn: false
-        })
+        body: JSON.stringify({ is_reset: true })
       });
       if (res.ok) {
         setWinner(null);

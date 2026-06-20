@@ -37,6 +37,28 @@ export default function Scribbles({ roomId, isOnline, onBack }) {
   const [isTimeOut, setIsTimeOut] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
+  const handleOnlineReset = async () => {
+    playSound('click');
+    setIsPending(true);
+    try {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ is_reset: true })
+      });
+      if (res.ok) {
+        setIsWon(false);
+        setIsTimeOut(false);
+        fetchRoomState();
+      }
+    } catch (e) {
+      console.error("Failed to reset online Scribbles game:", e);
+    } finally {
+      setIsPending(false);
+    }
+  };
+
   const getDynamicRevealText = (word, elapsed) => {
     if (!word) return "";
     const chars = word.split('');
@@ -259,16 +281,17 @@ export default function Scribbles({ roomId, isOnline, onBack }) {
         }
 
         // Check victory or timeout status
-        if (data.status === 'ended') {
-          if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+        if (data.status === 'ended' || bState.status === 'ended') {
           if (bState.guessed) {
             setIsWon(true);
+            setIsTimeOut(false);
           } else {
             setIsTimeOut(true);
+            setIsWon(false);
           }
-        } else if (bState.guessed) {
-          setIsWon(true);
-          if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+        } else {
+          setIsWon(false);
+          setIsTimeOut(false);
         }
       }
     } catch (e) {
@@ -694,9 +717,14 @@ export default function Scribbles({ roomId, isOnline, onBack }) {
             <div className="victory-text">
               The secret word was indeed <strong>"{prompt.word}"</strong>! Excellent team play.
             </div>
-            <button className="btn-primary" onClick={() => onBack(true)}>
-              Return to Lounge
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
+              <button className="btn-primary" onClick={handleOnlineReset} disabled={isPending} style={{ flex: 1 }}>
+                {isPending ? 'Resetting...' : 'Play Again'}
+              </button>
+              <button className="btn-secondary" onClick={() => onBack(true)} style={{ flex: 1 }}>
+                Exit Room
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -709,9 +737,14 @@ export default function Scribbles({ roomId, isOnline, onBack }) {
             <div className="victory-text">
               The countdown expired! The secret word was <strong>"{prompt.word}"</strong>.
             </div>
-            <button className="btn-primary" style={{ background: 'var(--accent)', boxShadow: '0 4px 15px var(--accent-glow)', color: '#fff' }} onClick={() => onBack(true)}>
-              Return to Lounge
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
+              <button className="btn-primary" onClick={handleOnlineReset} disabled={isPending} style={{ flex: 1, background: 'var(--primary)', color: 'var(--bg-main)', boxShadow: '0 4px 15px var(--primary-glow)' }}>
+                {isPending ? 'Resetting...' : 'Play Again'}
+              </button>
+              <button className="btn-secondary" onClick={() => onBack(true)} style={{ flex: 1 }}>
+                Exit Room
+              </button>
+            </div>
           </div>
         </div>
       )}

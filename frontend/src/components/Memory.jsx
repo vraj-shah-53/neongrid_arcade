@@ -56,6 +56,27 @@ export default function Memory({ roomId, isOnline, onBack }) {
     }, 1000);
   };
 
+  const handleOnlineReset = async () => {
+    playSound('click');
+    setIsPending(true);
+    try {
+      const res = await fetch(`${window.API_BASE_URL}/api/room/${roomId}/move/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ is_reset: true })
+      });
+      if (res.ok) {
+        setIsWon(false);
+        fetchRoomState();
+      }
+    } catch (e) {
+      console.error("Failed to reset online Memory game:", e);
+    } finally {
+      setIsPending(false);
+    }
+  };
+
   useEffect(() => {
     if (!isOnline) {
       initOfflineGame();
@@ -142,7 +163,8 @@ export default function Memory({ roomId, isOnline, onBack }) {
 
         if (data.status === 'ended') {
           setIsWon(true);
-          if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+        } else {
+          setIsWon(false);
         }
       }
     } catch (e) {
@@ -365,9 +387,22 @@ export default function Memory({ roomId, isOnline, onBack }) {
             <div className="victory-text">
               {victoryDesc}
             </div>
-            <button className="btn-primary" onClick={isOnline ? onBack : initOfflineGame}>
-              {isOnline ? 'Return to Lobby' : 'Play Again'}
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
+              {isOnline ? (
+                <>
+                  <button className="btn-primary" onClick={handleOnlineReset} disabled={isPending} style={{ flex: 1 }}>
+                    {isPending ? 'Resetting...' : 'Play Again'}
+                  </button>
+                  <button className="btn-secondary" onClick={() => onBack(true)} style={{ flex: 1 }}>
+                    Exit Room
+                  </button>
+                </>
+              ) : (
+                <button className="btn-primary" onClick={initOfflineGame} style={{ width: '100%' }}>
+                  Play Again
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
