@@ -568,123 +568,151 @@ export default function Numberquest({ roomId, isOnline, onBack }) {
 
         {/* Playable Grid */}
         {(!isOnline || (roomData && roomData.board_state && roomData.board_state.status !== 'setting')) && !isAborted && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.2rem', width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: '2rem', width: '100%', alignItems: 'flex-start' }}>
             
-            {/* Multiplayer Live Status Banners */}
-            {isOnline && isCodemaker && (
-              <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', color: '#60a5fa', padding: '0.6rem 1rem', borderRadius: '6px', fontSize: '0.8rem', textAlign: 'center' }}>
-                🛡️ You are the <strong>Codemaker</strong>. Secret Code is: <strong style={{ color: '#fff', letterSpacing: '2px' }}>{secretNumber}</strong>. Watching opponent's guesses live...
-              </div>
-            )}
+            {/* Left side: Grid & Keys */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.2rem', flex: '1 1 300px', maxWidth: '360px', width: '100%' }}>
+              
+              {/* Multiplayer Live Status Banners */}
+              {isOnline && isCodemaker && (
+                <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', color: '#60a5fa', padding: '0.6rem 1rem', borderRadius: '6px', fontSize: '0.8rem', textAlign: 'center', width: '100%' }}>
+                  🛡️ You are the <strong>Codemaker</strong>. Secret Code is: <strong style={{ color: '#fff', letterSpacing: '2px' }}>{secretNumber}</strong>. Watching opponent's guesses live...
+                </div>
+              )}
 
-            <div className="wordle-board" style={{ maxWidth: '300px' }}>
-              {guesses.map((guess, rIndex) => {
-                const isCurrentRow = rIndex === attempt;
-                const displayStr = isCurrentRow ? currentGuess.padEnd(DIGIT_LENGTH, ' ') : guess.padEnd(DIGIT_LENGTH, ' ');
-                const feedbacks = isCurrentRow || rIndex > attempt ? [] : getTileFeedbacks(guess, secretNumber);
-                
-                return (
-                  <div key={rIndex} className="wordle-row" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
-                    {Array.from(displayStr).map((char, cIndex) => {
-                      const status = feedbacks[cIndex] || '';
+              <div className="wordle-board" style={{ maxWidth: '300px', width: '100%' }}>
+                {guesses.map((guess, rIndex) => {
+                  const isCurrentRow = rIndex === attempt;
+                  const displayStr = isCurrentRow ? currentGuess.padEnd(DIGIT_LENGTH, ' ') : guess.padEnd(DIGIT_LENGTH, ' ');
+                  const feedbacks = isCurrentRow || rIndex > attempt ? [] : getTileFeedbacks(guess, secretNumber);
+                  
+                  return (
+                    <div key={rIndex} className="wordle-row" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+                      {Array.from(displayStr).map((char, cIndex) => {
+                        const status = feedbacks[cIndex] || '';
+                        return (
+                          <div 
+                            key={cIndex} 
+                            className={`wordle-tile ${status}`}
+                            style={{
+                              fontSize: '1.6rem',
+                              aspectRatio: '1',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 800,
+                              borderRadius: '6px',
+                              background: status === 'correct' ? '#15803d' : status === 'present' ? '#a16207' : status === 'absent' ? '#374151' : 'rgba(255,255,255,0.02)',
+                              border: status ? 'none' : '2px solid var(--glass-border)'
+                            }}
+                          >
+                            {char.trim()}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {feedbackMsg && (
+                <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                  {feedbackMsg}
+                </span>
+              )}
+
+              {/* Guesser Keypad (Only show to Guesser in multiplayer, or always in offline) */}
+              {(!isOnline || isGuesser) && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%', maxWidth: '320px', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.4rem' }}>
+                    {['1', '2', '3', '4', '5'].map((key) => {
+                      const status = getKeyStatus(key);
                       return (
-                        <div 
-                          key={cIndex} 
-                          className={`wordle-tile ${status}`}
+                        <button
+                          key={key}
+                          onClick={() => handleKeyPress(key)}
                           style={{
-                            fontSize: '1.6rem',
-                            aspectRatio: '1',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 800,
-                            borderRadius: '6px',
-                            background: status === 'correct' ? '#15803d' : status === 'present' ? '#a16207' : status === 'absent' ? '#374151' : 'rgba(255,255,255,0.02)',
-                            border: status ? 'none' : '2px solid var(--glass-border)'
+                            background: status === 'correct' ? '#15803d' : status === 'present' ? '#a16207' : status === 'absent' ? '#374151' : 'rgba(255,255,255,0.06)',
+                            color: '#fff', border: 'none', borderRadius: '6px', padding: '0.8rem 0.3rem', fontSize: '1.1rem', fontWeight: 800, cursor: 'pointer', transition: '0.2s'
                           }}
                         >
-                          {char.trim()}
-                        </div>
+                          {key}
+                        </button>
                       );
                     })}
                   </div>
-                );
-              })}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.4rem' }}>
+                    {['6', '7', '8', '9', '0'].map((key) => {
+                      const status = getKeyStatus(key);
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => handleKeyPress(key)}
+                          style={{
+                            background: status === 'correct' ? '#15803d' : status === 'present' ? '#a16207' : status === 'absent' ? '#374151' : 'rgba(255,255,255,0.06)',
+                            color: '#fff', border: 'none', borderRadius: '6px', padding: '0.8rem 0.3rem', fontSize: '1.1rem', fontWeight: 800, cursor: 'pointer', transition: '0.2s'
+                          }}
+                        >
+                          {key}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                    <button
+                      onClick={() => handleKeyPress('BACK')}
+                      style={{
+                        background: 'rgba(255,255,255,0.06)', color: 'var(--accent)', border: 'none', borderRadius: '6px', padding: '0.8rem', fontSize: '0.9rem', fontWeight: 800, cursor: 'pointer', transition: '0.2s'
+                      }}
+                    >
+                      BACK
+                    </button>
+                    <button
+                      onClick={() => handleKeyPress('ENTER')}
+                      style={{
+                        background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.8rem', fontSize: '0.9rem', fontWeight: 800, cursor: 'pointer', transition: '0.2s'
+                      }}
+                    >
+                      ENTER
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Codemaker Waiting Message */}
+              {isOnline && isCodemaker && !isWon && !isLost && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', textAlign: 'center', marginTop: '1rem' }}>
+                  <RefreshCw size={24} className="spin-animation" style={{ color: 'var(--primary)' }} />
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    Waiting for <strong>{opponentName}</strong> to make a guess...
+                  </span>
+                </div>
+              )}
             </div>
 
-            {feedbackMsg && (
-              <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.85rem' }}>
-                {feedbackMsg}
-              </span>
-            )}
-
-            {/* Guesser Keypad (Only show to Guesser in multiplayer, or always in offline) */}
-            {(!isOnline || isGuesser) && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%', maxWidth: '320px', marginTop: '0.5rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.4rem' }}>
-                  {['1', '2', '3', '4', '5'].map((key) => {
-                    const status = getKeyStatus(key);
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => handleKeyPress(key)}
-                        style={{
-                          background: status === 'correct' ? '#15803d' : status === 'present' ? '#a16207' : status === 'absent' ? '#374151' : 'rgba(255,255,255,0.06)',
-                          color: '#fff', border: 'none', borderRadius: '6px', padding: '0.8rem 0.3rem', fontSize: '1.1rem', fontWeight: 800, cursor: 'pointer', transition: '0.2s'
-                        }}
-                      >
-                        {key}
-                      </button>
-                    );
-                  })}
+            {/* Right side: Color Guide */}
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.2rem', borderRadius: '12px',
+              background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', maxWidth: '280px', flex: '1 1 240px',
+              boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(4px)', width: '100%', marginTop: '1rem'
+            }}>
+              <h4 style={{ margin: 0, color: 'var(--primary)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 800 }}>Color Code Key</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <div style={{ width: '28px', height: '28px', background: '#15803d', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem', color: '#fff' }}>G</div>
+                  <span style={{ fontSize: '0.75rem', color: '#fff', lineHeight: '1.4' }}>Correct digit in the exact spot.</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.4rem' }}>
-                  {['6', '7', '8', '9', '0'].map((key) => {
-                    const status = getKeyStatus(key);
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => handleKeyPress(key)}
-                        style={{
-                          background: status === 'correct' ? '#15803d' : status === 'present' ? '#a16207' : status === 'absent' ? '#374151' : 'rgba(255,255,255,0.06)',
-                          color: '#fff', border: 'none', borderRadius: '6px', padding: '0.8rem 0.3rem', fontSize: '1.1rem', fontWeight: 800, cursor: 'pointer', transition: '0.2s'
-                        }}
-                      >
-                        {key}
-                      </button>
-                    );
-                  })}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <div style={{ width: '28px', height: '28px', background: '#a16207', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem', color: '#fff' }}>Y</div>
+                  <span style={{ fontSize: '0.75rem', color: '#fff', lineHeight: '1.4' }}>Digit is in the code, but wrong spot.</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
-                  <button
-                    onClick={() => handleKeyPress('BACK')}
-                    style={{
-                      background: 'rgba(255,255,255,0.06)', color: 'var(--accent)', border: 'none', borderRadius: '6px', padding: '0.8rem', fontSize: '0.9rem', fontWeight: 800, cursor: 'pointer', transition: '0.2s'
-                    }}
-                  >
-                    BACK
-                  </button>
-                  <button
-                    onClick={() => handleKeyPress('ENTER')}
-                    style={{
-                      background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.8rem', fontSize: '0.9rem', fontWeight: 800, cursor: 'pointer', transition: '0.2s'
-                    }}
-                  >
-                    ENTER
-                  </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <div style={{ width: '28px', height: '28px', background: '#374151', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem', color: '#fff' }}>X</div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>Digit is not present in the code.</span>
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* Codemaker Waiting Message */}
-            {isOnline && isCodemaker && !isWon && !isLost && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', textAlign: 'center', marginTop: '1rem' }}>
-                <RefreshCw size={24} className="spin-animation" style={{ color: 'var(--primary)' }} />
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  Waiting for <strong>{opponentName}</strong> to make a guess...
-                </span>
-              </div>
-            )}
           </div>
         )}
       </div>
