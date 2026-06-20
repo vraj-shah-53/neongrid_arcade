@@ -8,6 +8,7 @@ const MULTIPLAYER_GAMES = [
   { id: 'rps', name: 'Rock Paper Scissors' },
   { id: 'memory', name: 'Memory Match Duel' },
   { id: 'numberguess', name: 'Smart Guessing Duel' },
+  { id: 'numberquest', name: 'Number Quest (Wordle for Numbers)' },
   { id: 'scribbles', name: 'Scribbles Synced Canvas' },
   { id: 'nodehack', name: 'Hack the Node (Trivia)' }
 ];

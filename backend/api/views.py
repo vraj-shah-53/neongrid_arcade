@@ -1213,7 +1213,7 @@ def list_challenges(request):
     for c in accepted:
         room = OnlineRoom.objects.filter(room_id=c.room_id).first()
         age_seconds = (timezone.now() - c.created_at).total_seconds()
-        is_invalid_game = c.game_type not in ['tictactoe', 'rps', 'memory', 'numberguess', 'scribbles', 'nodehack']
+        is_invalid_game = c.game_type not in ['tictactoe', 'rps', 'memory', 'numberguess', 'scribbles', 'nodehack', 'numberquest']
         if age_seconds > 600 or is_invalid_game or not room or room.status == 'ended':
             c.delete()
         else:
@@ -1308,6 +1308,15 @@ def respond_challenge(request):
                     "node_pos": 50,
                     "answered": {},
                     "status": "playing"
+                }
+
+            elif challenge.game_type == 'numberquest':
+                board_state = {
+                    "secret": "",
+                    "guesses": [],
+                    "status": "setting",
+                    "codemaker_id": challenge.sender.id,
+                    "guesser_id": challenge.receiver.id
                 }
 
             room = OnlineRoom.objects.create(
@@ -1450,6 +1459,14 @@ def make_room_move(request, room_id):
                     "node_pos": 50,
                     "answered": {},
                     "status": "playing"
+                }
+            elif room.game_type == 'numberquest':
+                new_board_state = {
+                    "secret": "",
+                    "guesses": [],
+                    "status": "setting",
+                    "codemaker_id": challenge_sender_id,
+                    "guesser_id": challenge_receiver_id
                 }
                 
             room.board_state = json.dumps(new_board_state)

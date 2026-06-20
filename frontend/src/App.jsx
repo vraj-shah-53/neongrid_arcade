@@ -22,6 +22,7 @@ import Typing from './components/Typing';
 import Neonrunner from './components/Neonrunner';
 import Nodehack from './components/Nodehack';
 import Wordsearch from './components/Wordsearch';
+import Numberquest from './components/Numberquest';
 
 // Import auth/lobby components
 import AuthScreens from './components/AuthScreens';
@@ -86,6 +87,16 @@ const GAMES = [
     icon: HelpCircle,
     component: Numberguess,
     color: 'var(--accent)',
+    category: 'Logic',
+    multiplayer: true
+  },
+  {
+    id: 'numberquest',
+    title: 'Number Quest',
+    description: 'Wordle for numbers. Guess the 5-digit code in 6 chances with color-coded hints!',
+    icon: Trophy,
+    component: Numberquest,
+    color: 'var(--primary)',
     category: 'Logic',
     multiplayer: true
   },
