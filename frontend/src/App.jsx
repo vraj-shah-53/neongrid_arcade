@@ -3,7 +3,7 @@ import {
   Gamepad2, Volume2, VolumeX, ArrowLeft,
   Grid, Compass, Info, Award, HelpCircle,
   FileText, Activity, Layers, Edit3, ShieldAlert, Users, User,
-  Zap, Lock, Swords, Terminal, Search, Brain
+  Zap, Lock, Swords, Terminal, Search, Brain, Trophy
 } from 'lucide-react';
 import { playSound, setMuted, getMuted } from './utils/audio';
 import { useAuth } from './context/AuthContext';
