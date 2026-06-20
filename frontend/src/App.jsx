@@ -154,7 +154,7 @@ const GAMES = [
 ];
 
 function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, checkUser } = useAuth();
   const [view, setView] = useState('DASHBOARD'); // 'DASHBOARD', 'GAME', 'LOBBY', 'ONLINE_GAME'
   const [selectedGame, setSelectedGame] = useState(null);
   const [activeRoomId, setActiveRoomId] = useState(null);
@@ -223,6 +223,7 @@ function App() {
     setActiveRoomId(null);
     setActiveOnlineGame(null);
     setView('LOBBY');
+    if (checkUser) checkUser();
   };
 
   if (loading) {
@@ -248,6 +249,11 @@ function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.9rem' }}>
               <span style={{ color: 'var(--text-muted)' }}>
                 Pilot: <strong style={{ color: 'var(--primary)' }}>{user.name}</strong>
+              </span>
+              <span style={{ color: 'var(--text-muted)', display: 'flex', gap: '0.6rem', borderLeft: '1px solid var(--glass-border)', paddingLeft: '1rem' }}>
+                <span style={{ color: 'var(--primary)' }}>W: <strong>{user.wins}</strong></span>
+                <span style={{ color: 'var(--accent)' }}>L: <strong>{user.losses}</strong></span>
+                <span>T: <strong>{user.ties}</strong></span>
               </span>
               {view !== 'LOBBY' && view !== 'ONLINE_GAME' && (
                 <button className="btn-primary" onClick={handleEnterLobby} style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>
@@ -284,7 +290,7 @@ function App() {
                 <h3 className="game-title" style={{ color: 'var(--primary)' }}>MULTIPLAYER NEON LOBBY</h3>
                 <p className="game-description" style={{ marginBottom: 0 }}>
                   {user 
-                    ? `Connected as ${user.email}. Challenge other pilots, view win/loss records, and launch synced matches!` 
+                    ? `Connected as ${user.email}. Challenge other pilots, view win/loss records, and launch synced matches! [Stats: ${user.wins} Wins, ${user.losses} Losses, ${user.ties} Ties]` 
                     : "Establish net connection, authorize your codename, and challenge real-time players by email!"
                   }
                 </p>

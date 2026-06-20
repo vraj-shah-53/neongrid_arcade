@@ -7,9 +7,14 @@ export default function AuthScreens() {
   const { login, register } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => {
+    return localStorage.getItem('rememberedEmail') || '';
+  });
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => {
+    return !!localStorage.getItem('rememberedEmail');
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,10 +27,26 @@ export default function AuthScreens() {
     try {
       if (isRegister) {
         const res = await register(name, email, password);
-        if (!res.success) setError(res.error);
+        if (!res.success) {
+          setError(res.error);
+        } else {
+          if (rememberMe) {
+            localStorage.setItem('rememberedEmail', email);
+          } else {
+            localStorage.removeItem('rememberedEmail');
+          }
+        }
       } else {
         const res = await login(email, password);
-        if (!res.success) setError(res.error);
+        if (!res.success) {
+          setError(res.error);
+        } else {
+          if (rememberMe) {
+            localStorage.setItem('rememberedEmail', email);
+          } else {
+            localStorage.removeItem('rememberedEmail');
+          }
+        }
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -39,7 +60,7 @@ export default function AuthScreens() {
     setIsRegister(!isRegister);
     setError('');
     setName('');
-    setEmail('');
+    setEmail(localStorage.getItem('rememberedEmail') || '');
     setPassword('');
   };
 
@@ -115,6 +136,19 @@ export default function AuthScreens() {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
+        </div>
+
+        <div className="form-group remember-me-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.5rem 0 1rem 0' }}>
+          <input
+            id="remember-me"
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            style={{ width: 'auto', margin: 0, accentColor: 'var(--primary)', cursor: 'pointer' }}
+          />
+          <label htmlFor="remember-me" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', cursor: 'pointer', userSelect: 'none', margin: 0 }}>
+            Remember my codename email
+          </label>
         </div>
 
         <button type="submit" className="btn-primary auth-submit" disabled={loading}>
