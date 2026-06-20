@@ -197,36 +197,10 @@ export default function Sudoku() {
             const isFixed = initialBoard[rIdx] && initialBoard[rIdx][cIdx] !== 0;
             const hasError = errors.includes(`${rIdx}-${cIdx}`);
             
-            // Highlight calculations
-            const selectedVal = selectedCell ? board[selectedCell.r][selectedCell.c] : 0;
-            const isSameDigit = selectedVal !== 0 && val === selectedVal && !isSelected;
-            const isSameRowOrCol = selectedCell && (selectedCell.r === rIdx || selectedCell.c === cIdx);
-            
-            let isSameBlock = false;
-            if (selectedCell) {
-              if (size === 9) {
-                const selBlockR = Math.floor(selectedCell.r / 3);
-                const selBlockC = Math.floor(selectedCell.c / 3);
-                const blockR = Math.floor(rIdx / 3);
-                const blockC = Math.floor(cIdx / 3);
-                isSameBlock = selBlockR === blockR && selBlockC === blockC;
-              } else if (size === 6) {
-                const selBlockR = Math.floor(selectedCell.r / 2);
-                const selBlockC = Math.floor(selectedCell.c / 3);
-                const blockR = Math.floor(rIdx / 2);
-                const blockC = Math.floor(cIdx / 3);
-                isSameBlock = selBlockR === blockR && selBlockC === blockC;
-              }
-            }
-            
-            const isRelatedHighlight = selectedCell && (isSameRowOrCol || isSameBlock) && !isSelected;
-            
             let cellClass = "sudoku-cell";
             if (isSelected) cellClass += " selected";
             if (isFixed) cellClass += " fixed";
             if (hasError) cellClass += " error";
-            if (isSameDigit) cellClass += " highlight-digit";
-            else if (isRelatedHighlight) cellClass += " highlight-rel";
 
             // Dynamic thick borders calculations
             let borderStyle = {};

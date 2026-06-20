@@ -877,21 +877,7 @@ body {
   background: rgba(0, 255, 178, 0.25) !important;
   color: var(--primary) !important;
   font-weight: 700;
-}
-
-.sudoku-cell.highlight-digit {
-  background: rgba(0, 255, 178, 0.08) !important;
-  color: var(--primary) !important;
-}
-
-.sudoku-cell.fixed.highlight-digit {
-  background: rgba(0, 255, 178, 0.08) !important;
-  color: var(--primary) !important;
-  font-weight: 700;
-}
-
-.sudoku-cell.highlight-rel {
-  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 0 0 2px var(--primary);
 }
 
 .sudoku-cell.error {
