@@ -51,7 +51,6 @@ export default function Sudoku() {
   }, []);
 
   const handleCellClick = (r, c) => {
-    if (initialBoard[r][c] !== 0) return; // Cannot edit initial clues
     setSelectedCell({ r, c });
     playSound('click');
   };
@@ -59,6 +58,9 @@ export default function Sudoku() {
   const setNumber = (num) => {
     if (!selectedCell) return;
     const { r, c } = selectedCell;
+
+    // Check if cell is fixed (an initial clue)
+    if (initialBoard[r] && initialBoard[r][c] !== 0) return;
 
     const newBoard = board.map(row => [...row]);
     newBoard[r][c] = num;
@@ -189,6 +191,37 @@ export default function Sudoku() {
             const isFixed = initialBoard[rIdx] && initialBoard[rIdx][cIdx] !== 0;
             const hasError = errors.includes(`${rIdx}-${cIdx}`);
             
+            // Highlight calculations
+            const selectedVal = selectedCell ? board[selectedCell.r][selectedCell.c] : 0;
+            const isSameDigit = selectedVal !== 0 && val === selectedVal && !isSelected;
+            const isSameRowOrCol = selectedCell && (selectedCell.r === rIdx || selectedCell.c === cIdx);
+            
+            let isSameBlock = false;
+            if (selectedCell) {
+              if (size === 9) {
+                const selBlockR = Math.floor(selectedCell.r / 3);
+                const selBlockC = Math.floor(selectedCell.c / 3);
+                const blockR = Math.floor(rIdx / 3);
+                const blockC = Math.floor(cIdx / 3);
+                isSameBlock = selBlockR === blockR && selBlockC === blockC;
+              } else if (size === 6) {
+                const selBlockR = Math.floor(selectedCell.r / 2);
+                const selBlockC = Math.floor(selectedCell.c / 3);
+                const blockR = Math.floor(rIdx / 2);
+                const blockC = Math.floor(cIdx / 3);
+                isSameBlock = selBlockR === blockR && selBlockC === blockC;
+              }
+            }
+            
+            const isRelatedHighlight = selectedCell && (isSameRowOrCol || isSameBlock) && !isSelected;
+            
+            let cellClass = "sudoku-cell";
+            if (isSelected) cellClass += " selected";
+            if (isFixed) cellClass += " fixed";
+            if (hasError) cellClass += " error";
+            if (isSameDigit) cellClass += " highlight-digit";
+            else if (isRelatedHighlight) cellClass += " highlight-rel";
+
             // Dynamic thick borders calculations
             let borderStyle = {};
             if (size === 9) {
@@ -202,7 +235,7 @@ export default function Sudoku() {
             return (
               <button
                 key={`${rIdx}-${cIdx}`}
-                className={`sudoku-cell ${isSelected ? 'selected' : ''} ${isFixed ? 'fixed' : ''} ${hasError ? 'error' : ''}`}
+                className={cellClass}
                 style={borderStyle}
                 onClick={() => handleCellClick(rIdx, cIdx)}
                 disabled={isPending}
@@ -215,35 +248,40 @@ export default function Sudoku() {
       </div>
 
       {/* Input numbers pad */}
-      <div 
-        style={{ 
-          display: 'grid', 
-          gridTemplateColumns: `repeat(${inputNumbers.length + 1}, 1fr)`, 
-          gap: '0.4rem', 
-          maxWidth: size === 9 ? '400px' : '320px', 
-          width: '100%' 
-        }}
-      >
-        {inputNumbers.map((num) => (
-          <button
-            key={num}
-            onClick={() => setNumber(num)}
-            className="btn-secondary"
-            style={{ padding: '0.8rem 0', fontWeight: 'bold', fontSize: '1.1rem' }}
-            disabled={!selectedCell || isPending}
+      {(() => {
+        const isSelectedCellFixed = selectedCell && initialBoard[selectedCell.r] && initialBoard[selectedCell.r][selectedCell.c] !== 0;
+        return (
+          <div 
+            style={{ 
+              display: 'grid', 
+              gridTemplateColumns: `repeat(${inputNumbers.length + 1}, 1fr)`, 
+              gap: '0.4rem', 
+              maxWidth: size === 9 ? '400px' : '320px', 
+              width: '100%' 
+            }}
           >
-            {num}
-          </button>
-        ))}
-        <button
-          onClick={() => setNumber(0)}
-          className="btn-secondary"
-          style={{ padding: '0.8rem 0', fontWeight: 'bold', fontSize: '0.85rem' }}
-          disabled={!selectedCell || isPending}
-        >
-          Clear
-        </button>
-      </div>
+            {inputNumbers.map((num) => (
+              <button
+                key={num}
+                onClick={() => setNumber(num)}
+                className="btn-secondary"
+                style={{ padding: '0.8rem 0', fontWeight: 'bold', fontSize: '1.1rem' }}
+                disabled={!selectedCell || isSelectedCellFixed || isPending}
+              >
+                {num}
+              </button>
+            ))}
+            <button
+              onClick={() => setNumber(0)}
+              className="btn-secondary"
+              style={{ padding: '0.8rem 0', fontWeight: 'bold', fontSize: '0.85rem' }}
+              disabled={!selectedCell || isSelectedCellFixed || isPending}
+            >
+              Clear
+            </button>
+          </div>
+        );
+      })()}
 
       <div className="puzzle-controls" style={{ marginTop: '0.5rem' }}>
         <button className="btn-secondary" onClick={verifyAnswers} disabled={isPending || board.length === 0}>

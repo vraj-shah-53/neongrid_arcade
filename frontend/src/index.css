@@ -873,6 +873,27 @@ body {
   background: #080f1e;
 }
 
+.sudoku-cell.fixed.selected {
+  background: rgba(0, 255, 178, 0.25) !important;
+  color: var(--primary) !important;
+  font-weight: 700;
+}
+
+.sudoku-cell.highlight-digit {
+  background: rgba(0, 255, 178, 0.08) !important;
+  color: var(--primary) !important;
+}
+
+.sudoku-cell.fixed.highlight-digit {
+  background: rgba(0, 255, 178, 0.08) !important;
+  color: var(--primary) !important;
+  font-weight: 700;
+}
+
+.sudoku-cell.highlight-rel {
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .sudoku-cell.error {
   color: var(--accent);
   text-shadow: 0 0 10px var(--accent-glow);
