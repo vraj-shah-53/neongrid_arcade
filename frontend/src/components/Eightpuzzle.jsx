@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { playSound } from '../utils/audio';
 import { HelpCircle, RefreshCw, Cpu, Award } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const GOAL = [1, 2, 3, 4, 5, 6, 7, 8, 0];
 
@@ -10,6 +11,9 @@ export default function Eightpuzzle() {
   const [isSolving, setIsSolving] = useState(false);
   const [solvedPath, setSolvedPath] = useState([]);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [time, setTime] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
+  const { addCoins } = useAuth();
 
   const getInversions = (arr) => {
     let count = 0;
@@ -30,9 +34,11 @@ export default function Eightpuzzle() {
     playSound('click');
     setErrorMsg(null);
     setMoves(0);
+    setTime(0);
+    setTimerActive(true);
     setSolvedPath([]);
     setIsSolving(false);
-
+ 
     let temp;
     while (true) {
       temp = [...GOAL].sort(() => Math.random() - 0.5);
@@ -42,6 +48,18 @@ export default function Eightpuzzle() {
     }
     setBoard(temp);
   };
+
+  useEffect(() => {
+    let interval = null;
+    if (timerActive) {
+      interval = setInterval(() => {
+        setTime(t => t + 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timerActive]);
 
   useEffect(() => {
     shuffleBoard();
@@ -82,6 +100,8 @@ export default function Eightpuzzle() {
     setIsSolving(true);
     setErrorMsg(null);
 
+    setTimerActive(false);
+ 
     try {
       const response = await fetch(window.API_BASE_URL + '/api/eightpuzzle/solve/', {
         method: 'POST',
@@ -124,6 +144,16 @@ export default function Eightpuzzle() {
 
   const isCompleted = JSON.stringify(board) === JSON.stringify(GOAL);
 
+  useEffect(() => {
+    if (isCompleted && timerActive) {
+      setTimerActive(false);
+      playSound('win');
+      if (time < 60 && addCoins) {
+        addCoins(5);
+      }
+    }
+  }, [isCompleted, timerActive, time, addCoins]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', width: '100%' }}>
       <div className="memory-stats">
@@ -164,7 +194,7 @@ export default function Eightpuzzle() {
             <div className="victory-emoji">🧩</div>
             <div className="victory-title">Puzzle Solved!</div>
             <div className="victory-text">
-              Completed the 8-puzzle in <strong>{moves}</strong> moves!
+              Completed the 8-puzzle in <strong>{moves}</strong> moves and <strong>{time}</strong> seconds!{time < 60 && time > 0 ? " 🪙 Earned 5 Neon Coins!" : ""}
             </div>
             <button className="btn-primary" onClick={shuffleBoard}>
               Play Again

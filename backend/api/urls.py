@@ -16,6 +16,7 @@ urlpatterns = [
     path('auth/login/', views.auth_login, name='auth_login'),
     path('auth/logout/', views.auth_logout, name='auth_logout'),
     path('auth/user/', views.get_profile, name='get_profile'),
+    path('profile/add_coins/', views.add_coins, name='add_coins'),
 
     # Multiplayer Challenges
     path('challenges/send/', views.send_challenge, name='send_challenge'),

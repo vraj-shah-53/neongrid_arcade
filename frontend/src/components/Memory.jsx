@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const EMOJIS = ['😍', '🌀', '🥶', '🥳', '🍁', '😂', '😎', '👊'];
 
 export default function Memory({ roomId, isOnline, onBack }) {
-  const { user } = useAuth();
+  const { user, addCoins } = useAuth();
 
   // Common States
   const [cards, setCards] = useState([]);
@@ -93,8 +93,11 @@ export default function Memory({ roomId, isOnline, onBack }) {
       setIsActive(false);
       setIsWon(true);
       playSound('win');
+      if (time < 60 && addCoins) {
+        addCoins(5);
+      }
     }
-  }, [matches, isOnline]);
+  }, [matches, isOnline, time, addCoins]);
 
   const handleOfflineCardClick = (id) => {
     if (!isActive || selected.length >= 2) return;
@@ -330,7 +333,7 @@ export default function Memory({ roomId, isOnline, onBack }) {
     } else {
       victoryTitle = "You Win!";
       victoryEmoji = "🏆";
-      victoryDesc = `Finished in ${moves} moves and ${formatTime(time)}!`;
+      victoryDesc = `Finished in ${moves} moves and ${formatTime(time)}!${time < 60 ? " 🪙 Earned 5 Neon Coins!" : ""}`;
     }
   }
 

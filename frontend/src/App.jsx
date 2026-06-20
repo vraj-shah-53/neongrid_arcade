@@ -3,7 +3,7 @@ import {
   Gamepad2, Volume2, VolumeX, ArrowLeft,
   Grid, Compass, Info, Award, HelpCircle,
   FileText, Activity, Layers, Edit3, ShieldAlert, Users, User,
-  Zap, Lock, Swords, Terminal, Search
+  Zap, Lock, Swords, Terminal, Search, Brain
 } from 'lucide-react';
 import { playSound, setMuted, getMuted } from './utils/audio';
 import { useAuth } from './context/AuthContext';
@@ -23,6 +23,7 @@ import Neonrunner from './components/Neonrunner';
 import Nodehack from './components/Nodehack';
 import Wordsearch from './components/Wordsearch';
 import Numberquest from './components/Numberquest';
+import Patternmaster from './components/Patternmaster';
 
 // Import auth/lobby components
 import AuthScreens from './components/AuthScreens';
@@ -161,6 +162,16 @@ const GAMES = [
     color: 'var(--accent)',
     category: 'Puzzle',
     multiplayer: false
+  },
+  {
+    id: 'patternmaster',
+    title: 'Pattern Master',
+    description: 'Solve sequence patterns generated dynamically. Earn neon coins for each solved pattern!',
+    icon: Brain,
+    component: Patternmaster,
+    color: 'var(--primary)',
+    category: 'Logic',
+    multiplayer: false
   }
 ];
 
@@ -261,10 +272,11 @@ function App() {
               <span style={{ color: 'var(--text-muted)' }}>
                 Pilot: <strong style={{ color: 'var(--primary)' }}>{user.name}</strong>
               </span>
-              <span style={{ color: 'var(--text-muted)', display: 'flex', gap: '0.6rem', borderLeft: '1px solid var(--glass-border)', paddingLeft: '1rem' }}>
+              <span style={{ color: 'var(--text-muted)', display: 'flex', gap: '0.6rem', borderLeft: '1px solid var(--glass-border)', paddingLeft: '1rem', alignItems: 'center' }}>
                 <span style={{ color: 'var(--primary)' }}>W: <strong>{user.wins}</strong></span>
                 <span style={{ color: 'var(--accent)' }}>L: <strong>{user.losses}</strong></span>
                 <span>T: <strong>{user.ties}</strong></span>
+                <span style={{ color: '#fbbf24', textShadow: '0 0 8px rgba(251,191,36,0.5)', display: 'flex', alignItems: 'center', gap: '0.2rem', marginLeft: '0.5rem' }} title="Neon Coins">🪙 <strong>{user.coins || 0}</strong></span>
               </span>
               {view !== 'LOBBY' && view !== 'ONLINE_GAME' && (
                 <button className="btn-primary" onClick={handleEnterLobby} style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>
@@ -301,7 +313,7 @@ function App() {
                 <h3 className="game-title" style={{ color: 'var(--primary)' }}>MULTIPLAYER NEON LOBBY</h3>
                 <p className="game-description" style={{ marginBottom: 0 }}>
                   {user 
-                    ? `Connected as ${user.email}. Challenge other pilots, view win/loss records, and launch synced matches! [Stats: ${user.wins} Wins, ${user.losses} Losses, ${user.ties} Ties]` 
+                    ? `Connected as ${user.email}. Challenge other pilots, view win/loss records, and launch synced matches! [Stats: ${user.wins} Wins, ${user.losses} Losses, ${user.ties} Ties | 🪙 ${user.coins || 0} Neon Coins]` 
                     : "Establish net connection, authorize your codename, and challenge real-time players by email!"
                   }
                 </p>

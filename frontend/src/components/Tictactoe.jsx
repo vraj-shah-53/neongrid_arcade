@@ -3,13 +3,14 @@ import { playSound } from '../utils/audio';
 import { useAuth } from '../context/AuthContext';
 
 export default function Tictactoe({ roomId, isOnline, onBack }) {
-  const { user } = useAuth();
+  const { user, addCoins } = useAuth();
   
   // Base states
   const [board, setBoard] = useState(Array(9).fill(""));
   const [isXNext, setIsXNext] = useState(true);
   const [winner, setWinner] = useState(null);
   const [isPending, setIsPending] = useState(false);
+  const [tictactoeStreak, setTictactoeStreak] = useState(0);
 
   // Online specific state
   const [roomData, setRoomData] = useState(null);
@@ -195,10 +196,16 @@ export default function Tictactoe({ roomId, isOnline, onBack }) {
     setWinner(gameWinner);
     if (gameWinner === 'X') {
       playSound('win');
-    } else if (gameWinner === 'O') {
-      playSound('lose');
+      setTictactoeStreak(s => {
+        const next = s + 1;
+        if (next === 3 && addCoins) {
+          addCoins(3);
+        }
+        return next;
+      });
     } else {
-      playSound('match');
+      playSound(gameWinner === 'O' ? 'lose' : 'match');
+      setTictactoeStreak(0);
     }
   };
 
@@ -303,7 +310,7 @@ export default function Tictactoe({ roomId, isOnline, onBack }) {
                 ? 'A well-fought match!' 
                 : (isOnline 
                     ? ((winner === 'X' && isPlayer1) || (winner === 'O' && isPlayer2) ? 'Victory is yours!' : 'Better luck next time!')
-                    : (winner === 'X' ? 'Congratulations, you beat the machine!' : 'The AI was too smart this time!')
+                    : (winner === 'X' ? ('Congratulations, you beat the machine!' + (tictactoeStreak >= 3 ? ' 🪙 Earned 3 Neon Coins!' : '')) : 'The AI was too smart this time!')
                   )
               }
             </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { playSound } from '../utils/audio';
 import { RefreshCw, HelpCircle, CheckCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const THEMES = {
   CYBER: {
@@ -82,6 +83,7 @@ export default function Wordsearch() {
   const [isWon, setIsWon] = useState(false);
   const timerRef = useRef(null);
   const boardRef = useRef(null);
+  const { addCoins } = useAuth();
 
   // Initialize a new game
   const initGame = (size = gridSize, themeKey = activeTheme) => {
@@ -285,6 +287,9 @@ export default function Wordsearch() {
           clearInterval(timerRef.current);
           setIsWon(true);
           playSound('win');
+          if (time <= 30 && addCoins) {
+            addCoins(5);
+          }
         }
       }
     }
@@ -558,7 +563,7 @@ export default function Wordsearch() {
             <div className="victory-emoji">🧠</div>
             <div className="victory-title">Grid Decoded!</div>
             <div className="victory-text">
-              Found all {targetWords.length} words under the <strong>{THEMES[activeTheme].name}</strong> theme in <strong>{formatTime(time)}</strong>!
+              Found all {targetWords.length} words under the <strong>{THEMES[activeTheme].name}</strong> theme in <strong>{formatTime(time)}</strong>!{time <= 30 ? " 🪙 Earned 5 Neon Coins!" : ""}
             </div>
             <button className="btn-primary" onClick={() => initGame(gridSize, activeTheme)}>
               Next Puzzle

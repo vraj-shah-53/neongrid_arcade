@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { playSound } from '../utils/audio';
 import { HelpCircle, RefreshCw, Cpu, CheckSquare } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Sudoku() {
   const [size, setSize] = useState(9); // 9 (Classic) or 6 (Mini)
@@ -12,6 +13,8 @@ export default function Sudoku() {
   const [errors, setErrors] = useState([]); // list of strings "r-c"
   const [isWon, setIsWon] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [isAutoSolved, setIsAutoSolved] = useState(false);
+  const { addCoins } = useAuth();
 
   const generateNewBoard = async (diff = difficulty, newSize = size) => {
     playSound('click');
@@ -19,6 +22,7 @@ export default function Sudoku() {
     setIsWon(false);
     setSelectedCell(null);
     setErrors([]);
+    setIsAutoSolved(false);
     
     try {
       const res = await fetch(window.API_BASE_URL + '/api/sudoku/generate/', {
@@ -73,6 +77,7 @@ export default function Sudoku() {
     if (checkBoardFinished(newBoard)) {
       setIsWon(true);
       playSound('win');
+      if (addCoins) addCoins(5);
     }
   };
 
@@ -106,6 +111,7 @@ export default function Sudoku() {
     setBoard(solution.map(row => [...row]));
     setSelectedCell(null);
     setErrors([]);
+    setIsAutoSolved(true);
     setIsWon(true);
     playSound('win');
   };
@@ -298,7 +304,7 @@ export default function Sudoku() {
             <div className="victory-emoji">🧠</div>
             <div className="victory-title">Grid Solved!</div>
             <div className="victory-text">
-              Excellent! You solved the {size}x{size} Sudoku puzzle board successfully!
+              Excellent! You solved the {size}x{size} Sudoku puzzle board successfully!{!isAutoSolved && " 🪙 Earned 5 Neon Coins!"}
             </div>
             <button className="btn-primary" onClick={() => generateNewBoard(difficulty, size)}>
               Play Again

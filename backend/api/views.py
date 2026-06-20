@@ -1084,7 +1084,8 @@ def auth_register(request):
             "email": user.email,
             "wins": user.profile.wins,
             "losses": user.profile.losses,
-            "ties": user.profile.ties
+            "ties": user.profile.ties,
+            "coins": user.profile.coins
         })
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
@@ -1110,7 +1111,8 @@ def auth_login(request):
                 "email": user.email,
                 "wins": user.profile.wins,
                 "losses": user.profile.losses,
-                "ties": user.profile.ties
+                "ties": user.profile.ties,
+                "coins": user.profile.coins
             })
         else:
             return JsonResponse({"error": "Invalid email or password"}, status=401)
@@ -1134,10 +1136,32 @@ def get_profile(request):
             "email": user.email,
             "wins": user.profile.wins,
             "losses": user.profile.losses,
-            "ties": user.profile.ties
+            "ties": user.profile.ties,
+            "coins": user.profile.coins
         })
     else:
         return JsonResponse({"authenticated": False}, status=200)
+
+@csrf_exempt
+@require_POST
+def add_coins(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+    try:
+        data = json.loads(request.body)
+        amount = int(data.get('amount', 0))
+        if amount <= 0:
+            return JsonResponse({"error": "Invalid amount"}, status=400)
+        
+        profile = request.user.profile
+        profile.coins += amount
+        profile.save()
+        return JsonResponse({
+            "success": True,
+            "coins": profile.coins
+        })
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
 
 
 # ----------------------------------------------------

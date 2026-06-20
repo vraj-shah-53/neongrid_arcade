@@ -9,7 +9,7 @@ const OPTIONS = [
 ];
 
 export default function Rps({ roomId, isOnline, onBack }) {
-  const { user } = useAuth();
+  const { user, addCoins } = useAuth();
 
   // Local/AI Mode States
   const [userChoice, setUserChoice] = useState(null);
@@ -106,7 +106,14 @@ export default function Rps({ roomId, isOnline, onBack }) {
       setHistory(h => ["Tie", ...h].slice(0, 5));
     } else if (playerSelection.beats === cpuSelection.name) {
       setResult("You Win!");
-      setStreak(s => s + 1);
+      setStreak(s => {
+        const next = s + 1;
+        if (next === 5 && addCoins) {
+          addCoins(5);
+          setResult("You Win! 🪙 Earned 5 Neon Coins!");
+        }
+        return next;
+      });
       setHistory(h => ["Win", ...h].slice(0, 5));
       playSound('match');
     } else {

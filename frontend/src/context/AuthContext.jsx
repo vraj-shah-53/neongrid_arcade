@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }) => {
             wins: data.wins,
             losses: data.losses,
             ties: data.ties,
+            coins: data.coins || 0,
             password: prev ? prev.password : undefined
           };
           localStorage.setItem('rememberedUser', JSON.stringify(updated));
@@ -97,6 +98,7 @@ export const AuthProvider = ({ children }) => {
           wins: data.wins,
           losses: data.losses,
           ties: data.ties,
+          coins: data.coins || 0,
           password: password
         };
         setUser(userData);
@@ -129,6 +131,7 @@ export const AuthProvider = ({ children }) => {
         wins: data.wins,
         losses: data.losses,
         ties: data.ties,
+        coins: data.coins || 0,
         password: password
       };
       setUser(userData);
@@ -155,6 +158,7 @@ export const AuthProvider = ({ children }) => {
         wins: data.wins,
         losses: data.losses,
         ties: data.ties,
+        coins: data.coins || 0,
         password: password
       };
       setUser(userData);
@@ -162,6 +166,34 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } else {
       return { success: false, error: data.error || "Registration failed" };
+    }
+  };
+
+  const addCoins = async (amount) => {
+    try {
+      const res = await fetch(window.API_BASE_URL + '/api/profile/add_coins/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ amount })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setUser(prev => {
+          if (!prev) return null;
+          const updated = { ...prev, coins: data.coins };
+          localStorage.setItem('rememberedUser', JSON.stringify(updated));
+          return updated;
+        });
+      }
+    } catch (e) {
+      console.warn("Failed to add coins on server, updating locally:", e);
+      setUser(prev => {
+        if (!prev) return null;
+        const updated = { ...prev, coins: (prev.coins || 0) + amount };
+        localStorage.setItem('rememberedUser', JSON.stringify(updated));
+        return updated;
+      });
     }
   };
 
@@ -179,7 +211,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, checkUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, checkUser, addCoins }}>
       {children}
     </AuthContext.Provider>
   );

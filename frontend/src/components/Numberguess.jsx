@@ -4,7 +4,7 @@ import { HelpCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Numberguess({ roomId, isOnline, onBack }) {
-  const { user } = useAuth();
+  const { user, addCoins } = useAuth();
 
   // Offline/AI Mode States
   const [maxRange, setMaxRange] = useState(100);
@@ -101,6 +101,10 @@ export default function Numberguess({ roomId, isOnline, onBack }) {
       setStatus("Correct!");
       setIsWon(true);
       playSound('win');
+      if (newHistory.length <= 3 && addCoins) {
+        addCoins(3);
+        setStatus("Correct! 🪙 Earned 3 Neon Coins!");
+      }
     } else {
       const hint = num < targetNumber ? "Too Low!" : "Too High!";
       setStatus(`${hint} (${difference > maxRange * 0.15 ? "Cold ❄️" : "Hot 🔥"})`);
