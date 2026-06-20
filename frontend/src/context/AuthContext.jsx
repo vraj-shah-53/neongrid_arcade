@@ -23,6 +23,11 @@ export const AuthProvider = ({ children }) => {
 
   // Check if user session already exists on page mount or refresh stats
   const checkUser = async () => {
+    // Start a timeout to unlock the UI if the backend is asleep (Render free tier spin-up)
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
     try {
       const res = await fetch(window.API_BASE_URL + '/api/auth/user/', {
         credentials: 'include'
@@ -76,6 +81,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
       }
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
