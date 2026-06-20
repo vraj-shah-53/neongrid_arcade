@@ -326,7 +326,9 @@ function App() {
 
           <div className="hero-section">
             <h1>NEONGRID ARCADE</h1>
-            <p>Ready to enter the grid? 10 premium retro-neon gaming modules designed and developed by Vraj. Let the games begin!</p>
+            <p>
+              Initialize system sequence. <span style={{ color: 'var(--primary)', textShadow: '0 0 10px var(--primary-glow)', fontWeight: 800 }}>14 premium retro-neon arcade modules</span> are online. Establish network connection and initiate gameplay protocol.
+            </p>
           </div>
 
           <div className="game-grid">
