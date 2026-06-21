@@ -1078,7 +1078,11 @@ def auth_register(request):
         user = User.objects.create_user(username=email, email=email, password=password, first_name=name)
         django_login(request, user)
 
+        from django.core import signing
+        token = signing.dumps({"user_id": user.id})
+
         return JsonResponse({
+            "token": token,
             "id": user.id,
             "name": user.first_name,
             "email": user.email,
@@ -1105,7 +1109,10 @@ def auth_login(request):
         user = authenticate(username=email, password=password)
         if user is not None:
             django_login(request, user)
+            from django.core import signing
+            token = signing.dumps({"user_id": user.id})
             return JsonResponse({
+                "token": token,
                 "id": user.id,
                 "name": user.first_name,
                 "email": user.email,

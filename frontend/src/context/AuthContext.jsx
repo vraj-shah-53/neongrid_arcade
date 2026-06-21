@@ -29,9 +29,7 @@ export const AuthProvider = ({ children }) => {
     }, 1500);
 
     try {
-      const res = await fetch(window.API_BASE_URL + '/api/auth/user/', {
-        credentials: 'include'
-      });
+      const res = await fetch(window.API_BASE_URL + '/api/auth/user/');
       const data = await res.json();
       if (data.authenticated) {
         // Update user state and keep cached credentials if they exist
@@ -44,30 +42,14 @@ export const AuthProvider = ({ children }) => {
             losses: data.losses,
             ties: data.ties,
             coins: data.coins || 0,
-            password: prev ? prev.password : undefined
+            token: prev ? prev.token : undefined
           };
           localStorage.setItem('rememberedUser', JSON.stringify(updated));
           return updated;
         });
       } else {
-        // Session not active on server - check if we have remembered credentials
-        const cached = localStorage.getItem('rememberedUser');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed.email && parsed.password) {
-            // Attempt background re-login
-            const loginRes = await backgroundLogin(parsed.email, parsed.password);
-            if (!loginRes.success) {
-              setUser(null);
-              localStorage.removeItem('rememberedUser');
-            }
-          } else {
-            setUser(null);
-            localStorage.removeItem('rememberedUser');
-          }
-        } else {
-          setUser(null);
-        }
+        setUser(null);
+        localStorage.removeItem('rememberedUser');
       }
     } catch (e) {
       console.warn("Auth check failed:", e);
@@ -86,37 +68,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Helper login for background use to avoid setting state multiple times
-  const backgroundLogin = async (email, password) => {
-    try {
-      const res = await fetch(window.API_BASE_URL + '/api/auth/login/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        const userData = {
-          id: data.id,
-          name: data.name,
-          email: data.email,
-          wins: data.wins,
-          losses: data.losses,
-          ties: data.ties,
-          coins: data.coins || 0,
-          password: password
-        };
-        setUser(userData);
-        localStorage.setItem('rememberedUser', JSON.stringify(userData));
-        return { success: true };
-      }
-    } catch (err) {
-      console.warn("Background login failed:", err);
-    }
-    return { success: false };
-  };
-
   useEffect(() => {
     checkUser();
   }, []);
@@ -125,7 +76,6 @@ export const AuthProvider = ({ children }) => {
     const res = await fetch(window.API_BASE_URL + '/api/auth/login/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
@@ -138,7 +88,7 @@ export const AuthProvider = ({ children }) => {
         losses: data.losses,
         ties: data.ties,
         coins: data.coins || 0,
-        password: password
+        token: data.token
       };
       setUser(userData);
       localStorage.setItem('rememberedUser', JSON.stringify(userData));
@@ -152,7 +102,6 @@ export const AuthProvider = ({ children }) => {
     const res = await fetch(window.API_BASE_URL + '/api/auth/register/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ name, email, password })
     });
     const data = await res.json();
@@ -165,7 +114,7 @@ export const AuthProvider = ({ children }) => {
         losses: data.losses,
         ties: data.ties,
         coins: data.coins || 0,
-        password: password
+        token: data.token
       };
       setUser(userData);
       localStorage.setItem('rememberedUser', JSON.stringify(userData));
@@ -180,7 +129,6 @@ export const AuthProvider = ({ children }) => {
       const res = await fetch(window.API_BASE_URL + '/api/profile/add_coins/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ amount })
       });
       const data = await res.json();
@@ -207,8 +155,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('rememberedUser');
     try {
       await fetch(window.API_BASE_URL + '/api/auth/logout/', { 
-        method: 'POST',
-        credentials: 'include'
+        method: 'POST'
       });
     } catch (e) {
       console.error("Logout request failed:", e);
