@@ -1048,6 +1048,32 @@ def typing_passage(request):
     passage = random.choice(PASSAGES)
     return JsonResponse(passage)
 
+HANGMAN_WORDS = [
+    "python", "software", "keyboard", "database", "geometry", "programming", 
+    "developer", "computer", "algorithm", "javascript", "compiler", "network", 
+    "security", "encryption", "hardware", "internet", "website", "application", 
+    "variable", "function", "argument", "parameter", "constant", "operator", 
+    "boolean", "integer", "string", "character", "interface", "protocol", 
+    "framework", "library", "repository", "terminal", "debugger", "processor", 
+    "memory", "storage", "analytics", "bandwidth", "cybersecurity", "server", 
+    "client", "request", "response", "cookie", "session", "browser", 
+    "document", "element", "selector", "stylesheet", "responsive", "animation", 
+    "transition", "transform", "gradient", "backdrop", "filter", "canvas", 
+    "context", "particle", "confetti", "victory", "defeat", "gallows", 
+    "hangman", "arithmetic", "triangle", "cylinder", "matrix", "vector", 
+    "equation", "formula", "algebraic", "physics", "gravity", "nebula", 
+    "galaxy", "universe", "telescope", "microscope", "science", "chemistry", 
+    "biology", "geology", "volcano", "tsunami", "earthquake", "avalanche", 
+    "hurricane", "tornado", "blizzard", "lightning", "thunder", "rainbow", 
+    "horizon", "atmosphere", "stratosphere", "satellite", "astronaut", 
+    "spaceship", "adventure", "journey", "expedition", "challenge"
+]
+
+@require_GET
+def hangman_word(request):
+    word = random.choice(HANGMAN_WORDS)
+    return JsonResponse({"word": word})
+
 
 # ----------------------------------------------------
 # 7. MULTIPLAYER AUTHENTICATION

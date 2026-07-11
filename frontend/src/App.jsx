@@ -24,6 +24,7 @@ import Nodehack from './components/Nodehack';
 import Wordsearch from './components/Wordsearch';
 import Numberquest from './components/Numberquest';
 import Patternmaster from './components/Patternmaster';
+import Hangman from './components/Hangman';
 
 // Import auth/lobby components
 import AuthScreens from './components/AuthScreens';
@@ -171,6 +172,16 @@ const GAMES = [
     component: Patternmaster,
     color: 'var(--primary)',
     category: 'Logic',
+    multiplayer: false
+  },
+  {
+    id: 'hangman',
+    title: 'Hangman Showdown',
+    description: 'Guess the hidden letters and solve the word before the gallows closes in!',
+    icon: HelpCircle,
+    component: Hangman,
+    color: 'var(--accent)',
+    category: 'Word',
     multiplayer: false
   }
 ];

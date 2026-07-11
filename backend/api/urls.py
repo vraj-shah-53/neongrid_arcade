@@ -10,6 +10,7 @@ urlpatterns = [
     path('sudoku/generate/', views.sudoku_generate, name='sudoku_generate'),
     path('sudoku/solve/', views.sudoku_solve, name='sudoku_solve'),
     path('typing/passage/', views.typing_passage, name='typing_passage'),
+    path('hangman/word/', views.hangman_word, name='hangman_word'),
 
     # Multiplayer Authentication
     path('auth/register/', views.auth_register, name='auth_register'),
