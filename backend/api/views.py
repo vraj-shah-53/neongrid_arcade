@@ -1020,35 +1020,28 @@ def sudoku_generate(request):
         return JsonResponse({"error": str(e)}, status=400)
 
 # ----------------------------------------------------
-# 6. TYPING SPEED PASSAGES
+# 6. TYPING SPEED PASSAGES (LOADED FROM JSON)
 # ----------------------------------------------------
-PASSAGES = [
-    {
-        "text": "The quick brown fox jumps over the lazy dog. This pangram contains every letter of the English alphabet. Typing it helps warm up your fingers and builds muscle memory.",
-        "author": "Classic Pangram",
-        "category": "Warm-up"
-    },
-    {
-        "text": "const calculateBestMove = (board, depth, isMaximizing) => { if (checkWinner(board)) return score; let bestVal = isMaximizing ? -Infinity : Infinity; return bestVal; };",
-        "author": "Code Snippet",
-        "category": "Programming"
-    },
-    {
-        "text": "In the middle of difficulty lies opportunity. Do not stop when you are tired. Stop when you are done. Success is not final, failure is not fatal: it is the courage to continue that counts.",
-        "author": "Albert Einstein & Winston Churchill",
-        "category": "Inspiration"
-    },
-    {
-        "text": "The web is more than just code. It is an interactive canvas where design meets logic, creating visual experiences that respond to the tap of a key or the drag of a mouse.",
-        "author": "Design Philosophy",
-        "category": "Creative"
-    },
-    {
-        "text": "import pygame\nimport sys\npygame.init()\nscreen = pygame.display.set_mode((800, 600))\nwhile True:\n    for event in pygame.event.get():\n        if event.type == pygame.QUIT:\n            sys.exit()",
-        "author": "Python Code",
-        "category": "Programming"
-    }
-]
+import os
+
+passages_file_path = os.path.join(os.path.dirname(__file__), 'passages.json')
+try:
+    with open(passages_file_path, 'r', encoding='utf-8') as f:
+        PASSAGES = json.load(f)
+except Exception as e:
+    # Safe fallback if file is missing/error loading
+    PASSAGES = [
+        {
+            "text": "The quick brown fox jumps over the lazy dog. This pangram contains every letter of the English alphabet. Typing it helps warm up your fingers and builds muscle memory.",
+            "author": "Classic Pangram",
+            "category": "Warm-up"
+        },
+        {
+            "text": "In the middle of difficulty lies opportunity. Do not stop when you are tired. Stop when you are done. Success is not final, failure is not fatal: it is the courage to continue that counts.",
+            "author": "Albert Einstein & Winston Churchill",
+            "category": "Inspiration"
+        }
+    ]
 
 @require_GET
 def typing_passage(request):
